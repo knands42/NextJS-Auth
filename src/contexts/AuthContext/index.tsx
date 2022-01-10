@@ -1,16 +1,15 @@
 import { NextPage } from 'next'
 import Router from 'next/router'
-import { parseCookies, setCookie } from 'nookies'
 import { createContext, useContext, useState, useEffect } from 'react'
 import { api } from 'services/api'
-import { setCookiesWhenSignIn, setHeaderAuthorization } from 'utils/cookies'
 import {
-  AuthContextData,
-  Cookies,
-  SignInRequest,
-  SignInResponse,
-  User
-} from './types'
+  setTokenCookie,
+  setHeaderAuthorization,
+  unsetTokenCookie,
+  getToken
+} from 'utils/cookies'
+import { goToDashboard, goToLogin } from 'utils/routes'
+import { AuthContextData, SignInRequest, SignInResponse, User } from './types'
 
 const AuthContext = createContext({} as AuthContextData)
 
@@ -19,15 +18,19 @@ const AuthProvider: NextPage = ({ children }) => {
   const isAuthenticated = !!user
 
   useEffect(() => {
-    const cookies = parseCookies()
-    const token = cookies[Cookies.token]
+    const token = getToken()
 
     if (token) {
-      api.get<User>('/me').then(response => {
-        const { email, permissions, roles } = response.data
+      api
+        .get<User>('/me')
+        .then(response => {
+          const { email, permissions, roles } = response.data
 
-        setUser({ email, permissions, roles })
-      })
+          setUser({ email, permissions, roles })
+        })
+        .catch(() => {
+          signOut()
+        })
     }
   }, [])
 
@@ -40,18 +43,24 @@ const AuthProvider: NextPage = ({ children }) => {
 
       const { roles, permissions, token, refreshToken } = response.data
 
-      setCookiesWhenSignIn(token, refreshToken)
+      setTokenCookie(token, refreshToken)
       setHeaderAuthorization(token)
       setUser({ email, permissions, roles })
 
-      Router.push('/dashboard')
+      goToDashboard()
     } catch (err) {
       console.error(err)
     }
   }
 
+  async function signOut(): Promise<void> {
+    unsetTokenCookie()
+    setUser({} as User)
+    goToLogin()
+  }
+
   return (
-    <AuthContext.Provider value={{ signIn, isAuthenticated, user }}>
+    <AuthContext.Provider value={{ signIn, signOut, isAuthenticated, user }}>
       {children}
     </AuthContext.Provider>
   )

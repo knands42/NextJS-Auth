@@ -11,7 +11,7 @@ export enum UserPermissions {
 
 export enum Cookies {
   token = 'nextauth.token',
-  refreshToken = 'nextauth.refreshToken',
+  refreshToken = 'nextauth.refreshToken'
 }
 
 export type User = {
@@ -21,9 +21,9 @@ export type User = {
 }
 
 export type SignInResponse = {
-  permissions: UserPermissions[],
-  refreshToken: string,
-  roles: UserRoles[],
+  permissions: UserPermissions[]
+  refreshToken: string
+  roles: UserRoles[]
   token: string
 }
 
@@ -34,6 +34,7 @@ export type SignInRequest = {
 
 export type AuthContextData = {
   signIn(credentials: SignInRequest): Promise<void>
+  signOut(): Promise<void>
   user: User
   isAuthenticated: boolean
 }
