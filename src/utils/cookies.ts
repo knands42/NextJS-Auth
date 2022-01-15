@@ -8,7 +8,7 @@ function getToken(ctx: any = undefined): string | undefined {
 }
 
 function getRefreshToken(ctx: any = undefined): string | undefined {
-  const cookies = parseCookies()
+  const cookies = parseCookies(ctx)
   return cookies[Cookies.refreshToken]
 }
 

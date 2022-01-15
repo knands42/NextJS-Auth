@@ -33,7 +33,15 @@ function setupAPIClient(ctx: UndefinedContext = undefined): AxiosInstance {
     (error: AxiosError) => {
       if (checkUnauthorizedStatus(error)) {
         if (checkTokenExpiredStatus(error)) {
-          updateToken()
+          if (!isRefreshing) {
+            const refreshToken = getRefreshToken(ctx)
+
+            if (!refreshToken) {
+              return new AuthTokenError()
+            }
+
+            refreshToken && requestToUpdateToken(refreshToken)
+          }
 
           const originalConfig = error.config
 
@@ -60,13 +68,6 @@ function setupAPIClient(ctx: UndefinedContext = undefined): AxiosInstance {
 
   function logout() {
     process.browser && unsetTokenCookie()
-  }
-
-  function updateToken() {
-    if (!isRefreshing) {
-      const refreshToken = getRefreshToken(ctx)
-      refreshToken && requestToUpdateToken(refreshToken)
-    }
   }
 
   function requestToUpdateToken(refreshToken: string) {
