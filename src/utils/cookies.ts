@@ -1,13 +1,13 @@
 import { Cookies } from 'contexts/AuthContext/types'
 import { destroyCookie, parseCookies, setCookie } from 'nookies'
-import { api } from 'services/api'
+import { api } from 'services/apiClient'
 
-function getToken() {
-  const cookies = parseCookies()
+function getToken(ctx: any = undefined): string | undefined {
+  const cookies = parseCookies(ctx)
   return cookies[Cookies.token]
 }
 
-function getRefreshToken() {
+function getRefreshToken(ctx: any = undefined): string | undefined {
   const cookies = parseCookies()
   return cookies[Cookies.refreshToken]
 }
@@ -17,13 +17,13 @@ function setTokenCookie(token: string, refreshToken: string, ctx: any = null) {
     maxAge: 60 * 60 * 25 * 30,
     path: '/'
   })
-  setCookie(undefined, Cookies.refreshToken, refreshToken, {
+  setCookie(ctx ?? undefined, Cookies.refreshToken, refreshToken, {
     maxAge: 60 * 60 * 25 * 30,
     path: '/'
   })
 }
 
-function unsetTokenCookie(ctx: any = null) {
+function unsetTokenCookie(ctx: any = undefined) {
   destroyCookie(ctx ?? undefined, Cookies.token)
   destroyCookie(ctx ?? undefined, Cookies.refreshToken)
 }

@@ -1,12 +1,13 @@
 import { useAuthContext } from 'contexts/AuthContext'
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 import { FormEvent, useState } from 'react'
+import { withSSRGuest } from 'utils/withSSRGuest'
 
 const Home: NextPage = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { isAuthenticated, signIn } = useAuthContext()
+  const { signIn } = useAuthContext()
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -35,5 +36,13 @@ const Home: NextPage = () => {
     </form>
   )
 }
+
+export const getServerSideProps: GetServerSideProps = withSSRGuest(
+  async ctx => {
+    return {
+      props: {}
+    }
+  }
+)
 
 export default Home
