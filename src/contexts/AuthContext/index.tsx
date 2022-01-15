@@ -1,6 +1,7 @@
 import { NextPage } from 'next'
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useState, useEffect } from 'react'
 import { api } from 'services/apiClient'
+import { ServerUris } from 'utils/routes'
 import {
   setTokenCookie,
   setHeaderAuthorization,
@@ -8,20 +9,41 @@ import {
   getToken
 } from 'utils/cookies'
 import { goToDashboard, goToLogin } from 'utils/routes'
-import { AuthContextData, SignInRequest, SignInResponse, User } from './types'
+import {
+  AuthContextData,
+  BroadcastMessagesEvent,
+  SignInRequest,
+  SignInResponse,
+  User
+} from './types'
 
 const AuthContext = createContext({} as AuthContextData)
+let authChannel: BroadcastChannel
 
 const AuthProvider: NextPage = ({ children }) => {
   const [user, setUser] = useState<User>({} as User)
   const isAuthenticated = !!user
 
   useEffect(() => {
+    authChannel = new BroadcastChannel('auth')
+    authChannel.onmessage = async (message: MessageEvent<string>) => {
+      type eventType = { [key: string]: () => void }
+
+      const events: eventType = {
+        // [BroadcastMessagesEvent.SIGNIN]: () => goToDashboard(),
+        [BroadcastMessagesEvent.SIGNOUT]: () => goToLogin()
+      }
+
+      await events[message.data]()
+    }
+  }, [])
+
+  useEffect(() => {
     const token = getToken()
 
     if (token) {
       api
-        .get<User>('/me')
+        .get<User>(ServerUris.ME)
         .then(response => {
           const { email, permissions, roles } = response.data
 
@@ -35,7 +57,7 @@ const AuthProvider: NextPage = ({ children }) => {
 
   async function signIn({ email, password }: SignInRequest): Promise<void> {
     try {
-      const response = await api.post<SignInResponse>('sessions', {
+      const response = await api.post<SignInResponse>(ServerUris.SESSIONS, {
         email,
         password
       })
@@ -47,6 +69,8 @@ const AuthProvider: NextPage = ({ children }) => {
       setUser({ email, permissions, roles })
 
       goToDashboard()
+
+      authChannel.postMessage(BroadcastMessagesEvent.SIGNIN)
     } catch (err) {
       console.error(err)
     }
@@ -56,6 +80,8 @@ const AuthProvider: NextPage = ({ children }) => {
     unsetTokenCookie()
     setUser({} as User)
     goToLogin()
+
+    authChannel.postMessage(BroadcastMessagesEvent.SIGNOUT)
   }
 
   return (
@@ -65,6 +91,4 @@ const AuthProvider: NextPage = ({ children }) => {
   )
 }
 
-const useAuthContext = () => useContext(AuthContext)
-
-export { AuthProvider, useAuthContext }
+export { AuthProvider, AuthContext }

@@ -3,7 +3,8 @@ import {
   GetServerSidePropsContext,
   GetServerSidePropsResult
 } from 'next'
-import { getToken } from './cookies'
+import { PagesUris } from 'utils/routes'
+import { getToken } from '../cookies'
 
 function withSSRGuest<T>(fn: GetServerSideProps<T>): GetServerSideProps {
   return async (
@@ -14,7 +15,7 @@ function withSSRGuest<T>(fn: GetServerSideProps<T>): GetServerSideProps {
     if (token) {
       return {
         redirect: {
-          destination: '/dashboard',
+          destination: PagesUris.DASHBOARD,
           permanent: false
         }
       }

@@ -14,17 +14,24 @@ export enum Cookies {
   refreshToken = 'nextauth.refreshToken'
 }
 
-export type User = {
+export type User = UserPermRoles & {
   email: string
-  permissions: UserPermissions[]
-  roles: UserRoles[]
 }
 
-export type SignInResponse = {
-  permissions: UserPermissions[]
+export type UserTokenDecode = UserPermRoles & {
+  iat: number
+  exp: number
+  sub: string
+}
+
+export type SignInResponse = UserPermRoles & {
   refreshToken: string
-  roles: UserRoles[]
   token: string
+}
+
+export type UserPermRoles = {
+  permissions?: UserPermissions[]
+  roles?: UserRoles[]
 }
 
 export type SignInRequest = {
@@ -33,8 +40,13 @@ export type SignInRequest = {
 }
 
 export type AuthContextData = {
-  signIn(credentials: SignInRequest): Promise<void>
-  signOut(): Promise<void>
+  signIn: (credentials: SignInRequest) => Promise<void>
+  signOut: () => Promise<void>
   user: User
   isAuthenticated: boolean
+}
+
+export enum BroadcastMessagesEvent {
+  SIGNIN = 'signIn',
+  SIGNOUT = 'signOut'
 }

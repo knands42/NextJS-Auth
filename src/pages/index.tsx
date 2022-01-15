@@ -1,7 +1,7 @@
-import { useAuthContext } from 'contexts/AuthContext'
+import { useAuthContext } from 'hooks/useAuthContext'
 import type { GetServerSideProps, NextPage } from 'next'
 import { FormEvent, useState } from 'react'
-import { withSSRGuest } from 'utils/withSSRGuest'
+import { withSSRGuest } from 'utils/higherOrderFunctions/withSSRGuest'
 
 const Home: NextPage = () => {
   const [email, setEmail] = useState('')
