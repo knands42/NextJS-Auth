@@ -1,3 +1,8 @@
+# Archived
+
+This was made some time ago, I'm not gonna update but also I'm not gonna delete it, so I decided to archive
+
+
 # NextJS-Auth
 
 Application with complete authorization/authentication from scratch with any authentication library
